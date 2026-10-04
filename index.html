@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ku" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>بیرمەند | Birmand AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@400;600;700;800;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Noto Kufi Arabic', sans-serif;
+      background-color: #030712;
+      color: #f3f4f6;
+    }
+    .neon-border {
+      box-shadow: 0 0 20px rgba(168, 85, 247, 0.4), inset 0 0 15px rgba(59, 130, 246, 0.2);
+    }
+    .neon-glow {
+      text-shadow: 0 0 12px rgba(168, 85, 247, 0.8);
+    }
+    .animated-gradient {
+      background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899);
+      background-size: 200% 200%;
+      animation: gradientShift 6s ease infinite;
+    }
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    .hide-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between overflow-x-hidden">
+
+  <!-- Screen 1: Registration Modal / Welcome -->
+  <div id="authScreen" class="fixed inset-0 z-50 bg-[#030712]/95 backdrop-blur-xl flex items-center justify-center p-4">
+    <div class="max-w-md w-full p-8 rounded-3xl bg-gray-900/90 border border-purple-500/30 neon-border relative text-center">
+      <div class="w-20 h-20 mx-auto mb-4 rounded-3xl animated-gradient flex items-center justify-center text-3xl shadow-xl">
+        🧠
+      </div>
+      <h2 class="text-3xl font-black text-white mb-1 neon-glow">بیرمەند AI</h2>
+      <p class="text-xs text-purple-300 font-semibold mb-6">زیرەکترین و مەزەدارترین مێشکی کوردی</p>
+
+      <form id="regForm" onsubmit="handleRegister(event)" class="space-y-4 text-right">
+        <div>
+          <label class="text-xs font-bold text-gray-300 block mb-1">Full Name (ناوی تەواو بە ئینگلیزی)</label>
+          <input type="text" id="regFullName" required placeholder="e.g. Peshawa Omer" pattern="[a-zA-Z\s]+" class="w-full px-4 py-2.5 rounded-2xl bg-gray-800/80 border border-gray-700 text-sm focus:border-purple-500 outline-none text-left" dir="ltr" />
+        </div>
+
+        <div>
+          <label class="text-xs font-bold text-gray-300 block mb-1">Username (نابێ پیتەکان گەورە بن)</label>
+          <input type="text" id="regUsername" required placeholder="e.g. zhir_99" oninput="validateUsername(this)" class="w-full px-4 py-2.5 rounded-2xl bg-gray-800/80 border border-gray-700 text-sm focus:border-purple-500 outline-none text-left" dir="ltr" />
+          <p id="userError" class="text-[11px] text-red-400 mt-1 hidden"></p>
+        </div>
+
+        <button type="submit" class="w-full py-3 rounded-2xl animated-gradient font-black text-sm text-white shadow-lg hover:scale-105 active:scale-95 transition-all">
+          چوونەژوورەوە بە هەژمار 🚀
+        </button>
+
+        <div class="relative flex items-center justify-center my-3">
+          <div class="border-t border-gray-700 w-full"></div>
+          <span class="bg-gray-900 px-3 text-[11px] text-gray-400">یان ڕاستەوخۆ بە</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <button type="button" onclick="quickSocial('Google')" class="py-2.5 rounded-2xl border border-gray-700 hover:border-red-500/50 flex items-center justify-center gap-2 text-xs font-bold">
+            <i class="fa-brands fa-google text-red-500"></i> Google
+          </button>
+          <button type="button" onclick="quickSocial('Apple')" class="py-2.5 rounded-2xl border border-gray-700 hover:border-white/50 flex items-center justify-center gap-2 text-xs font-bold">
+            <i class="fa-brands fa-apple text-white"></i> Apple
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="sticky top-0 z-40 bg-gray-950/80 backdrop-blur-md border-b border-purple-900/30 px-4 py-3">
+    <div class="max-w-4xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-2xl animated-gradient flex items-center justify-center text-xl shadow-lg">
+          🧠
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-lg font-black tracking-wide text-white">بیرمەند</h1>
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] bg-green-500/20 text-green-400 border border-green-500/30 font-bold">
+              <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span> لەسەر هێڵ
+            </span>
+          </div>
+          <p id="userDisplay" class="text-[11px] text-gray-400">بەخێربێیت</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button onclick="clearChat()" title="سڕینەوەی چات" class="w-9 h-9 rounded-xl border border-gray-800 hover:border-red-500/50 flex items-center justify-center text-gray-400 hover:text-red-400 transition-all">
+          <i class="fa-solid fa-trash-can text-sm"></i>
+        </button>
+        <button onclick="handleLogout()" title="دەرچوون" class="w-9 h-9 rounded-xl border border-gray-800 hover:border-purple-500/50 flex items-center justify-center text-gray-400 hover:text-purple-400 transition-all">
+          <i class="fa-solid fa-arrow-right-from-bracket text-sm"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Chat Area -->
+  <main id="chatBox" class="flex-1 max-w-4xl w-full mx-auto p-4 space-y-4 overflow-y-auto hide-scrollbar">
+    <!-- Initial Bot Greeting -->
+    <div class="flex items-start gap-3">
+      <div class="w-9 h-9 rounded-2xl animated-gradient flex-shrink-0 flex items-center justify-center text-sm shadow">
+        🧠
+      </div>
+      <div class="max-w-[85%] md:max-w-[70%] bg-gray-900 border border-purple-500/30 p-4 rounded-3xl rounded-tr-none text-sm text-gray-200 leading-relaxed space-y-2">
+        <p>سڵاو قوربان! ئەمن <b>بیرمەند</b>م، ئەی‌ئایە مەحللییەکەی هەولێر و کوردستان. چی پرسیارێکت هەیە؛ لە دەرس و مەکتەب بیگرە هەتا مۆڵ و بازاڕ و قسەی خۆش، وێنە بێت یان دەنگ ڕاستەوخۆ دەمەوێژیم لۆ بکە!</p>
+        <div class="flex flex-wrap gap-2 pt-2">
+          <button onclick="sendQuick('ماجدی مۆڵ لەکوێیە؟')" class="text-xs px-3 py-1.5 rounded-xl bg-purple-950/60 border border-purple-700/40 text-purple-300 hover:bg-purple-900/60">📍 ماجدی مۆڵ لەکوێیە؟</button>
+          <button onclick="sendQuick('کەمێک دڵم تەنگە قسەم لەگەڵ بکە')" class="text-xs px-3 py-1.5 rounded-xl bg-purple-950/60 border border-purple-700/40 text-purple-300 hover:bg-purple-900/60">☕ دڵم تەنگە</button>
+          <button onclick="sendQuick('نوکتەیەکی هەولێری بم بۆ بڵێ')" class="text-xs px-3 py-1.5 rounded-xl bg-purple-950/60 border border-purple-700/40 text-purple-300 hover:bg-purple-900/60">😂 نوکتەیەکم پێ بڵێ</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Input Area -->
+  <footer class="sticky bottom-0 z-40 bg-gray-950/90 backdrop-blur-md border-t border-gray-800/80 p-3">
+    <div class="max-w-4xl mx-auto space-y-2">
+      <div class="flex items-center gap-2 bg-gray-900/90 border border-purple-500/30 focus-within:border-purple-500 rounded-3xl px-3 py-2 transition-all">
+        <!-- Image Upload -->
+        <label class="cursor-pointer text-gray-400 hover:text-purple-400 p-2">
+          <i class="fa-solid fa-camera text-lg"></i>
+          <input type="file" id="imgInput" accept="image/*" class="hidden" onchange="handleImage(this)" />
+        </label>
+
+        <!-- Voice Button -->
+        <button id="voiceBtn" onclick="toggleVoice()" class="text-gray-400 hover:text-red-400 p-2 transition-all">
+          <i class="fa-solid fa-microphone text-lg"></i>
+        </button>
+
+        <!-- Text Input -->
+        <input type="text" id="userInput" placeholder="چی لە مێشکتدایە لە بیرمەند بپرسە..." onkeydown="if(event.key === 'Enter') handleSend()" class="flex-1 bg-transparent text-sm text-gray-100 outline-none px-2" />
+
+        <!-- Send Button -->
+        <button onclick="handleSend()" class="w-10 h-10 rounded-2xl animated-gradient flex items-center justify-center text-white shadow-lg hover:scale-105 active:scale-95 transition-all flex-shrink-0">
+          <i class="fa-solid fa-paper-plane text-xs"></i>
+        </button>
+      </div>
+
+      <!-- Signature -->
+      <p class="text-[11px] text-center text-gray-500 font-semibold tracking-wider">
+        دروستکراوە لەلایەن <span class="text-purple-400 font-black">CYB013</span>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // State persistence
+    const takenUsers = ['admin', 'zhiro', 'birmand', 'root'];
+
+    function validateUsername(input) {
+      input.value = input.value.toLowerCase().replace(/[^a-z0-9_]/g, '');
+      const err = document.getElementById('userError');
+      if (takenUsers.includes(input.value)) {
+        err.innerText = 'ئەم یوزەرنەیمە پێشتر گیراوە، دانەیەکی تر بنووسە!';
+        err.classList.remove('hidden');
+      } else {
+        err.classList.add('hidden');
+      }
+    }
+
+    function handleRegister(e) {
+      e.preventDefault();
+      const name = document.getElementById('regFullName').value.trim();
+      const user = document.getElementById('regUsername').value.trim();
+
+      if (takenUsers.includes(user)) return;
+
+      localStorage.setItem('birmand_user', JSON.stringify({ name, user }));
+      initSession();
+    }
+
+    function quickSocial(provider) {
+      const demoUser = 'user_' + Math.floor(1000 + Math.random() * 9000);
+      localStorage.setItem('birmand_user', JSON.stringify({ name: provider + ' User', user: demoUser }));
+      initSession();
+    }
+
+    function initSession() {
+      const saved = localStorage.getItem('birmand_user');
+      if (saved) {
+        const u = JSON.parse(saved);
+        document.getElementById('authScreen').classList.add('hidden');
+        document.getElementById('userDisplay').innerText = `@${u.user} (${u.name})`;
+        loadChat();
+      } else {
+        document.getElementById('authScreen').classList.remove('hidden');
+      }
+    }
+
+    function handleLogout() {
+      if (confirm('دڵنیایت لە چوونە دەرەوە لەم هەژمارە؟')) {
+        localStorage.removeItem('birmand_user');
+        location.reload();
+      }
+    }
+
+    // Local Chat Persistence
+    function saveChat(role, text, mapLink = null) {
+      const history = JSON.parse(localStorage.getItem('birmand_chat') || '[]');
+      history.push({ role, text, mapLink });
+      localStorage.setItem('birmand_chat', JSON.stringify(history));
+    }
+
+    function loadChat() {
+      const history = JSON.parse(localStorage.getItem('birmand_chat') || '[]');
+      history.forEach(item => appendMessage(item.role, item.text, item.mapLink, false));
+    }
+
+    function clearChat() {
+      if (confirm('چاتەکان بە تەواوی لە مۆبایلەکەت دەسڕدرێنەوە، دڵنیایت؟')) {
+        localStorage.removeItem('birmand_chat');
+        location.reload();
+      }
+    }
+
+    function appendMessage(role, text, mapLink = null, shouldSave = true) {
+      const box = document.getElementById('chatBox');
+      const isUser = role === 'user';
+      const div = document.createElement('div');
+      div.className = `flex items-start gap-3 ${isUser ? 'flex-row-reverse' : ''}`;
+
+      div.innerHTML = `
+        <div class="w-9 h-9 rounded-2xl ${isUser ? 'bg-purple-600' : 'animated-gradient'} flex-shrink-0 flex items-center justify-center text-sm shadow">
+          ${isUser ? '👤' : '🧠'}
+        </div>
+        <div class="max-w-[85%] md:max-w-[70%] ${isUser ? 'bg-purple-900/60 border border-purple-500/40 rounded-tl-none' : 'bg-gray-900 border border-purple-500/30 rounded-tr-none'} p-4 rounded-3xl text-sm leading-relaxed space-y-2">
+          <p>${text}</p>
+          ${mapLink ? `<a href="${mapLink}" target="_blank" class="inline-flex items-center gap-2 mt-2 px-3 py-1.5 rounded-xl bg-orange-500/20 border border-orange-500/40 text-orange-300 font-bold hover:bg-orange-500/30 text-xs">📍 کردنەوە لە نەخشەی گۆگڵ ماپس</a>` : ''}
+        </div>
+      `;
+
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+
+      if (shouldSave) saveChat(role, text, mapLink);
+    }
+
+    function handleSend() {
+      const input = document.getElementById('userInput');
+      const txt = input.value.trim();
+      if (!txt) return;
+
+      appendMessage('user', txt);
+      input.value = '';
+
+      // AI Response Logic (Kurdish Bazarri & Smart Local Knowledge)
+      setTimeout(() => {
+        respondAsBirmand(txt);
+      }, 700);
+    }
+
+    function sendQuick(txt) {
+      appendMessage('user', txt);
+      setTimeout(() => respondAsBirmand(txt), 600);
+    }
+
+    function respondAsBirmand(query) {
+      const q = query.toLowerCase();
+      let reply = "";
+      let map = null;
+
+      if (q.includes("ماجدی مۆڵ") || q.includes("majidi mall")) {
+        reply = "ماجدی مۆڵ دەکەوێتە سەر ڕێگای سەرەکی هەولێر - پیرمام، نزیک شارۆچکەی گوندی ئیتاڵی ١. شوێنێکی فەخامەتە و هەموو بڕاندەکان و خواردنگەکانی لێیە!";
+        map = "https://maps.google.com/?q=Majidi+Mall+Erbil";
+      } else if (q.includes("فامیلی مۆڵ") || q.includes("family mall")) {
+        reply = "فامیلی مۆڵ دەکەوێتە سەر شەقامی ١٠٠ مەتری هەولێر. شوێنی یۆمێ (Yome) لە نهۆمی خوارەوەیە، پڕە لە خواردنەوەی ژاپۆنی و ڕامینی خۆش!";
+        map = "https://maps.google.com/?q=Family+Mall+Erbil";
+      } else if (q.includes("دڵم تەنگە") || q.includes("خەم")) {
+        reply = "قوربانت بم دەردت لە گیانم، خەم مەخۆ دنیا دوو ڕۆژە! چایت لەسەرە یان قاوە؟ پێم بڵێ چی قەوماوە با پێکەوە حەلی بکەین، خەم خواردن موستەقبەلی تێدا نییە!";
+      } else if (q.includes("نوکتە") || q.includes("کۆمیدی") || q.includes("پێکەنین")) {
+        reply = "پیاوەک دەچێتە سوپەرمارکێتێ، دەڵێ کاکە شیرتان هەیە؟ دەڵێ بەڵێ، دەڵێ مانگاتان هەیە؟ دەڵێ نا! دەڵێ ئەی ئەو شیرەتان لە کوێ هیناوە؟ کەسەکە دەڵێ برادەر وەختی فەلسەفە نییە، تۆ شیرت دەوێ یان بەڵگەنامەی مانگاکەت دەوێ؟ 😂";
+      } else if (q.includes("خوێندن") || q.includes("پۆلی ١٢") || q.includes("مەکتەب")) {
+        reply = "دەستخۆش دکتۆری داهاتوو! لە چ بابەتێک گیریت خواردووە؟ بیرکاری، فیزیا یان زیندەزانی؟ هەر مەسەلەیەکت پێیە بینێرە تا وردوخاشی بکەم بۆت.";
+      } else {
+        reply = "وەڵا پرسیارێکی زۆر شازت کرد براکەم! بە کورتییەکەی: من لێرەم تا هەر شتێکت بوێ بۆت بکەم. وێنەی هەر پرسیارێک یان مەسەلەیەکت هەبێت دایبنێ یەکسەر شیکاری دەکەین.";
+      }
+
+      appendMessage('bot', reply, map);
+    }
+
+    function handleImage(input) {
+      if (input.files && input.files[0]) {
+        appendMessage('user', '📷 وێنەیەکم نارد، تکایە شیی بکەوە...');
+        setTimeout(() => {
+          appendMessage('bot', 'وێنەکەم وەرگرت براکەم! نمرە یەکە لە ڕوونی. ئەمە بابەتێکی گرنگە، بۆ شیکارکردنەکەی: با یەکەمجار لە خاڵی سەرەکییەوە دەست پێبکەین تا نمرەی تەواوت دەستکەوێت.');
+        }, 1200);
+      }
+    }
+
+    let isRecording = false;
+    function toggleVoice() {
+      const btn = document.getElementById('voiceBtn');
+      isRecording = !isRecording;
+      if (isRecording) {
+        btn.classList.add('text-red-500', 'animate-pulse');
+      } else {
+        btn.classList.remove('text-red-500', 'animate-pulse');
+        appendMessage('user', '🎙 [پەیامی دەنگی تۆمارکرا]');
+        setTimeout(() => {
+          appendMessage('bot', 'بە سەروچاو دەنگەکەتم بە ڕوونی بیست! قسەکانت زۆر تەواون و ڕێک هەروایە کە فەرمووت.');
+        }, 1000);
+      }
+    }
+
+    // Run on startup
+    initSession();
+  </script>
+</body>
+</html>
